@@ -14,23 +14,47 @@ function PrivateRoute({ children, roles }) {
   return children;
 }
 
+function RedirectIfAuthed({ children }) {
+  const { user } = useAuth();
+  if (user?.role === 'GURU') return <Navigate to="/guru" replace />;
+  if (user?.role === 'WALI_MURID') return <Navigate to="/wali" replace />;
+  return children;
+}
+
 export default function App() {
   return (
     <AuthProvider>
-      <Navbar />
-      <div className="py-6">
+      <div className="min-h-screen bg-gray-50">
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={
+            <RedirectIfAuthed>
+              <Login />
+            </RedirectIfAuthed>
+          } />
+          <Route path="/register" element={
+            <RedirectIfAuthed>
+              <Register />
+            </RedirectIfAuthed>
+          } />
           <Route path="/guru" element={
             <PrivateRoute roles={["GURU"]}>
-              <DashboardGuru />
+              <>
+                <Navbar />
+                <div className="py-6">
+                  <DashboardGuru />
+                </div>
+              </>
             </PrivateRoute>
           } />
           <Route path="/wali" element={
             <PrivateRoute roles={["WALI_MURID"]}>
-              <DashboardWali />
+              <>
+                <Navbar />
+                <div className="py-6">
+                  <DashboardWali />
+                </div>
+              </>
             </PrivateRoute>
           } />
         </Routes>
@@ -38,4 +62,3 @@ export default function App() {
     </AuthProvider>
   );
 }
-
